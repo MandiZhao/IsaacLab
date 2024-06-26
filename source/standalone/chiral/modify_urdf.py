@@ -37,13 +37,13 @@ _FOREARM_DOFS: Dict[str, Dof] = {
         joint_type="prismatic", axis=(0, 1, 0), stiffness=1000, joint_range=(-0.5, 0.5)
     ),
     "forearm_roll": Dof(
-        joint_type="revolute", axis=(0, 0, 1), stiffness=300, joint_range=(-0.25, 0.25)
+        joint_type="revolute", axis=(0, 0, 1), stiffness=300, joint_range=(-0.5, 0.5)
     ),
     "forearm_pitch": Dof(
-        joint_type="revolute", axis=(1, 0, 0), stiffness=50, joint_range=(0, 0.15)
+        joint_type="revolute", axis=(1, 0, 0), stiffness=50, joint_range=(-0.2, 0.2)
     ),
     "forearm_yaw": Dof(
-        joint_type="revolute", axis=(0, -1, 0), stiffness=300, joint_range=(-0.25, 0.25),
+        joint_type="revolute", axis=(0, -1, 0), stiffness=300, joint_range=(-0.5, 0.5),
     ),
 }
 
