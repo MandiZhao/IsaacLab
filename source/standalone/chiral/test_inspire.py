@@ -64,7 +64,7 @@ def write_hand_with_wrist_cfg(
         joint_names_expr=new_joint_names,
         effort_limit={joint: 1.0 for joint in new_joint_names},
         stiffness={joint: 1.0 for joint in new_joint_names},
-        damping={joint: 5000 for joint in new_joint_names},
+        damping={joint: 1 for joint in new_joint_names},
     )
     new_hand_cfg.actuators["wrists"] = wrist_actuators
     return new_hand_cfg
@@ -102,18 +102,18 @@ class InspireTwoHandsSceneCfg(InteractiveSceneCfg):
             wrist_dof_choices, new_urdf_fname,
             base_hand_cfg=INSPIRE_HAND_LEFT_CFG.replace(prim_path="{ENV_REGEX_NS}/HandLeft"), 
             is_left_hand=True)
-        # right_hand_cfg = write_hand_with_wrist_cfg(
-        #     wrist_dof_choices, new_urdf_fname,
-        #     base_hand_cfg=INSPIRE_HAND_RIGHT_CFG.replace(prim_path="{ENV_REGEX_NS}/HandRight"),
-        #     is_left_hand=False)
+        right_hand_cfg = write_hand_with_wrist_cfg(
+            wrist_dof_choices, new_urdf_fname,
+            base_hand_cfg=INSPIRE_HAND_RIGHT_CFG.replace(prim_path="{ENV_REGEX_NS}/HandRight"),
+            is_left_hand=False)
         self.inspire_left = left_hand_cfg
-        # self.inspire_right = right_hand_cfg
+        self.inspire_right = right_hand_cfg
         # ground plane
         self.ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
 
         # lights
         self.dome_light = AssetBaseCfg(
-            prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
+            prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=4000.0, color=(0.75, 0.75, 0.75))
         )
         self.replicate_physics = False # due to mimic joints!
 
@@ -121,28 +121,31 @@ class InspireTwoHandsSceneCfg(InteractiveSceneCfg):
 def scale(x, lower, upper):
     return 0.5 * (x + 1.0) * (upper - lower) + lower
 
-def sample_actuated_joints(robot, actuator_key="fingers", random_delta=0.1):
+def sample_actuated_joints(robot, actuator_key="fingers"):
     """
     Sample a small delta centering the current joint states
     """
+    if actuator_key not in robot.actuators:
+        print(f"Actuator key: {actuator_key} not found in robot actuators.")
+        return
     actuated_indices = robot.actuators[actuator_key].joint_indices # list of int 
     actuated_names = robot.actuators[actuator_key].joint_names # list of str
     # get idx for joint "L_FF_J1"
     idxs = []
     for i, name in enumerate(actuated_names):
-        if "F_J" in name:
-            idxs.append(i) 
+        idxs.append(i) 
     
     dof_limits = robot.root_physx_view.get_dof_limits() # shape [num_envs, num_total_joints, 2]
     actuated_limits = dof_limits[:, idxs] # shape [num_envs, num_actuated_joints, 2]
     
-    # sample a random delta 
+    # sample a random action within range 
     current_joint_pos = robot._data.joint_pos[:, idxs]  
-    rand_actions = torch.randn_like(current_joint_pos) * random_delta
-    new_joint_pos = current_joint_pos + rand_actions
-    clamped_pos = torch.clamp(new_joint_pos, actuated_limits[:, :, 0], actuated_limits[:, :, 1])
-    print(actuated_names, idxs, current_joint_pos, new_joint_pos, clamped_pos)
+    sampled_action = torch.randn_like(current_joint_pos) 
+    sampled_action = scale(sampled_action, actuated_limits[:, :, 0], actuated_limits[:, :, 1])
+    # clamp the sampled action to the joint limits
+    clamped_pos = torch.clamp(sampled_action, actuated_limits[:, :, 0], actuated_limits[:, :, 1])
     # set joint positions
+    print(f"Actuator key: {actuator_key}:\n", current_joint_pos, "\n", clamped_pos, "\n")
     robot.set_joint_position_target(clamped_pos, idxs)
     return 
 
@@ -153,14 +156,14 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     # robot = scene["inspire_left"]
     left_hand = scene["inspire_left"]
     robot = left_hand
-    # right_hand = scene["inspire_right"]
+    right_hand = scene["inspire_right"]
     # Define simulation stepping
     sim_dt = sim.get_physics_dt()
     count = 0
     # Simulation loop
     while simulation_app.is_running():
         # Reset
-        if count %  500 == 0: 
+        # if count %  500 == 0: 
             # reset counter
             # count = 0
             # reset the scene entities
@@ -179,10 +182,13 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
             # clear internal buffers
             # scene.reset()
             # print("[INFO]: Resetting robot state...")
-            # sample actuated joints
-            print(f"Step count: {count}")
-        # if count == 2000:
-        #     sample_actuated_joints(left_hand)
+            # sample actuated joints 
+        if count % 500 == 0:
+            print(f"Step: {count} - Sampling actuated joints...")
+            sample_actuated_joints(left_hand)
+            sample_actuated_joints(left_hand, actuator_key="wrists")
+            sample_actuated_joints(right_hand)
+            sample_actuated_joints(right_hand, actuator_key="wrists")
         #     breakpoint()
         # Apply random action
         # -- generate random joint efforts
@@ -206,7 +212,7 @@ def main():
     sim_cfg = sim_utils.SimulationCfg(device="cpu", use_gpu_pipeline=False)
     sim = SimulationContext(sim_cfg)
     # Set main camera
-    sim.set_camera_view([2.5, 0.0, 4.0], [0.0, 0.0, 2.0])
+    sim.set_camera_view([1.5, 0.0, 3.0], [0.0, 0.0, 1.0])
 
     # Design scene 
     scene_cfg = InspireTwoHandsSceneCfg(

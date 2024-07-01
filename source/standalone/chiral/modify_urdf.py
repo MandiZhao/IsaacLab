@@ -18,34 +18,32 @@ class Dof:
     """Forearm degree of freedom.""" 
     joint_type: str
     axis: Tuple[int, int, int]
-    stiffness: float
-    joint_range: Tuple[float, float]
+    joint_range: Tuple[float, float] = (-0.1, 0.1)
+    stiffness: int = 1
     reflect: bool = False 
-    effort: int = 20
-    velocity: int = 0.1
+    effort: int = 10
+    velocity: int = 1
 
 _FOREARM_DOFS: Dict[str, Dof] = {
     "forearm_tx": Dof(
         joint_type="prismatic",
-        axis=(1, 0, 0),
-        stiffness=300, 
-        joint_range=(-0.2, 0.2),
+        axis=(1, 0, 0),  
     ),
     "forearm_ty": Dof(
-        joint_type="prismatic", axis=(0, 0, 1), stiffness=1000, joint_range=(-0.5, 0.5)
+        joint_type="prismatic", axis=(0, 0, 1),  
     ),
     "forearm_tz": Dof(
-        joint_type="prismatic", axis=(0, 1, 0), stiffness=1000, joint_range=(-0.5, 0.5)
+        joint_type="prismatic", axis=(0, 1, 0), 
     ),
     "forearm_roll": Dof(
-        joint_type="revolute", axis=(0, 0, 1), stiffness=1000, joint_range=(-0.5, 0.5)
+        joint_type="revolute", axis=(0, 0, 1), joint_range=(-0.5, 0.5),
     ),
     "forearm_pitch": Dof(
-        joint_type="revolute", axis=(1, 0, 0), stiffness=1000, joint_range=(-0.5, 0.5)
+        joint_type="revolute", axis=(1, 0, 0), joint_range=(-0.5, 0.5),
     ),
     "forearm_yaw": Dof(
-        joint_type="revolute", axis=(0, -1, 0), stiffness=1000, joint_range=(-0.5, 0.5),
-    ),
+        joint_type="revolute", axis=(0, -1, 0), joint_range=(-0.5, 0.5),
+    ), 
 }
 
 def add_new_elem_for_dof(dof: Dof, root_elem, prev_joint_elem, new_link_name: str, base_link_name: str, left_hand=True):

@@ -10,13 +10,7 @@
   <joint name="fixed" type="fixed"> 
     <parent link="root"/>
     <child link="base_link"/>
-  </joint>
-  <!-- <joint name="fixed" type="fixed">
-    <origin xyz="0 0 0.5" rpy="-1.5707963 0 0" />
-    <parent link="root"/>
-    <child link="base_link"/>
-  </joint> -->
-
+  </joint> 
   <link name="base_link">
     <inertial>
       <origin
@@ -219,8 +213,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0.77"
+      lower="-0.2"
+      upper="0.97"
       effort="50" 
       />
     <mimic joint="R_TH_J2" multiplier="1" offset="0"/>
@@ -274,11 +268,10 @@
     <child
       link="R_TH_L4"/>
     <axis
-      xyz="0 0 1" />
-    <dynamics damping="0.0001" friction="0.0" />
+      xyz="0 0 1" /> 
     <limit
-      lower="0"
-      upper="0.597"
+      lower="-0.2"
+      upper="0.797"
       effort="50" 
       />
     <mimic joint="R_TH_J3" multiplier="1.13" offset="0"/>
@@ -406,11 +399,10 @@
     <child
       link="R_FF_L2" />
     <axis
-      xyz="0 0 1" />
-    <dynamics damping="0.0001" friction="0.0" />
+      xyz="0 0 1" /> 
     <limit
-      lower="0"
-      upper="1.82"
+      lower="-0.2"
+      upper="2.02"
       effort="0" 
       />
     <mimic joint="R_FF_J1" multiplier="1.13" offset="0"/>
@@ -534,11 +526,10 @@
     <parent link="R_MF_L1" />
     <child link="R_MF_L2" />
     <axis
-      xyz="0 0 1" />
-    <dynamics damping="0.0001" friction="0.0" />
+      xyz="0 0 1" /> 
     <limit
-      lower="0"
-      upper="1.75"
+      lower="-0.2"
+      upper="1.95"
       effort="50" 
       />
     <mimic joint="R_MF_J1" multiplier="1.13" offset="0"/>
@@ -663,11 +654,10 @@
     <child
       link="R_RF_L2" />
     <axis
-      xyz="0 0 1" />
-    <dynamics damping="0.0001" friction="0.0" />
+      xyz="0 0 1" /> 
     <limit
-      lower="0"
-      upper="1.75"
+      lower="-0.2"
+      upper="1.95"
       effort="50" 
       />
      <mimic joint="R_RF_J1" multiplier="1.08" offset="0"/>
@@ -794,11 +784,10 @@
     <child
       link="R_LF_L2" />
     <axis
-      xyz="0 0 1" />
-    <dynamics damping="0.0001" friction="0.0" />
+      xyz="0 0 1" /> 
     <limit
-      lower="0"
-      upper="1.87"
+      lower="-0.2"
+      upper="2.07"
       effort="50" 
       />
     <mimic joint="R_LF_J1" multiplier="1.13" offset="0"/>

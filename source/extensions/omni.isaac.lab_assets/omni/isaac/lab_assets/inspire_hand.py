@@ -21,7 +21,7 @@ INSPIRE_HAND_LEFT_CFG = ArticulationCfg(
         self_collision=False,
         default_drive_type="position",
         default_drive_stiffness=1.0,
-        default_drive_damping=1000,
+        default_drive_damping=10,
         activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -39,9 +39,8 @@ INSPIRE_HAND_LEFT_CFG = ArticulationCfg(
         joint_drive_props=sim_utils.JointDrivePropertiesCfg(drive_type="force"), 
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.2, 0.2, 0.5),
-        # rot=(0.0, 0.0, -0.7071, 0.7071),
-        joint_pos={".*": 0.0},
+        pos=(0.22, 0.0, 0.5), 
+        joint_pos={".*": 0.0}, 
     ),
     actuators={
         "fingers": ImplicitActuatorCfg(
@@ -65,12 +64,12 @@ INSPIRE_HAND_LEFT_CFG = ArticulationCfg(
                 "L_RF_J1": 1.0,
             },
             damping={
-                "L_TH_J1": 5000,
-                "L_TH_J2": 5000,
-                "L_FF_J1": 5000,
-                "L_MF_J1": 5000,
-                "L_LF_J1": 5000,
-                "L_RF_J1": 5000,
+                "L_TH_J1": 1,
+                "L_TH_J2": 1,
+                "L_FF_J1": 1,
+                "L_MF_J1": 1,
+                "L_LF_J1": 1,
+                "L_RF_J1": 1,
             },
         )
     },
@@ -82,7 +81,9 @@ INSPIRE_HAND_RIGHT_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
         # usd_path="/home/mandi/IsaacLab/handright01091.usd", #TODO: replace this with NUCLEUS path
         asset_path="inspire_hand_isaac/handright01091/urdf/handright01091_test.urdf",
-        fix_base=False,
+        fix_base=True,
+        import_inertia_tensor=True,
+        self_collision=False,
         activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=True,
@@ -90,7 +91,7 @@ INSPIRE_HAND_RIGHT_CFG = ArticulationCfg(
             max_depenetration_velocity=1000.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True,
+            enabled_self_collisions=False,
             solver_position_iteration_count=8,
             solver_velocity_iteration_count=0,
             sleep_threshold=0.005,
@@ -98,12 +99,12 @@ INSPIRE_HAND_RIGHT_CFG = ArticulationCfg(
         ),
         # collision_props=sim_utils.CollisionPropertiesCfg(contact_offset=0.005, rest_offset=0.0),
         joint_drive_props=sim_utils.JointDrivePropertiesCfg(drive_type="force"),
-        fixed_tendons_props=sim_utils.FixedTendonPropertiesCfg(limit_stiffness=30.0, damping=0.1),
+        # fixed_tendons_props=sim_utils.FixedTendonPropertiesCfg(limit_stiffness=30.0, damping=0.1),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, -0.2, 0.5),
-        # rot=(0.0, 0.0, -0.7071, 0.7071),
-        joint_pos={".*": 0.0},
+        pos=(-0.22, 0, 0.5),
+        rot=(0.0, 0.0, 1.0, 0.0),
+        joint_pos={".*": 0.0}, 
     ),
     actuators={
         "fingers": ImplicitActuatorCfg(
@@ -127,12 +128,12 @@ INSPIRE_HAND_RIGHT_CFG = ArticulationCfg(
                 "R_RF_J1": 1.0,
             },
             damping={
-                "R_TH_J1": 0.1,
-                "R_TH_J2": 0.1,
-                "R_FF_J1": 0.1,
-                "R_MF_J1": 0.1,
-                "R_LF_J1": 0.1,
-                "R_RF_J1": 0.1,
+                "R_TH_J1": 1.0,
+                "R_TH_J2": 1.0,
+                "R_FF_J1": 1.0,
+                "R_MF_J1": 1.0,
+                "R_LF_J1": 1.0,
+                "R_RF_J1": 1.0,
             },
         )
     },
