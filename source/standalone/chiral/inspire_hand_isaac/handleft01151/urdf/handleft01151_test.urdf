@@ -3,13 +3,17 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot name="handleft01151">
-
-  <!-- <link name="world"/>
-  <joint name="fixed" type="fixed">
-    <origin xyz="0 0 0.5" rpy="-1.5707963 0 0" />
-    <parent link="world"/>
+  <link name="root">
+    <mass value="0.01"/>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+    </inertial>
+  </link>
+  <joint name="fixed" type="fixed"> 
+    <parent link="root"/>
     <child link="base_link"/>
-  </joint> -->
+  </joint>
 
   <link name="base_link">
     <inertial>

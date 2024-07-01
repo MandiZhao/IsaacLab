@@ -4,12 +4,16 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot name="handright01091">
 
-  <!-- <link name="world"/>
-  <joint name="fixed" type="fixed">
-    <origin
-     xyz="0 0 0.5"
-   rpy="-1.5707963 0 0" />
-    <parent link="world"/>
+  <link name="root">
+    <mass value="0.01"/>
+  </link>
+  <joint name="fixed" type="fixed"> 
+    <parent link="root"/>
+    <child link="base_link"/>
+  </joint>
+  <!-- <joint name="fixed" type="fixed">
+    <origin xyz="0 0 0.5" rpy="-1.5707963 0 0" />
+    <parent link="root"/>
     <child link="base_link"/>
   </joint> -->
 

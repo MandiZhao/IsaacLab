@@ -5,6 +5,7 @@ DONT need urdfpy after all, just use lxml to parse the urdf file and add new ele
 
 inspired by: https://github.com/google-research/robopianist/blob/d9cde23e46cb30ebb8eeebb375a9c52191238a30/robopianist/models/hands/shadow_hand.py#L41C1-L41C14
 """
+import os 
 import argparse
 # from urdfpy import URDF
 from lxml import etree
@@ -20,30 +21,30 @@ class Dof:
     stiffness: float
     joint_range: Tuple[float, float]
     reflect: bool = False 
-    effort: int = 100
-    velocity: int = 0
+    effort: int = 20
+    velocity: int = 0.1
 
 _FOREARM_DOFS: Dict[str, Dof] = {
     "forearm_tx": Dof(
         joint_type="prismatic",
         axis=(1, 0, 0),
         stiffness=300, 
-        joint_range=(-1, 1),
+        joint_range=(-0.2, 0.2),
     ),
     "forearm_ty": Dof(
-        joint_type="prismatic", axis=(0, 0, 1), stiffness=300, joint_range=(-0.5, 0.5)
+        joint_type="prismatic", axis=(0, 0, 1), stiffness=1000, joint_range=(-0.5, 0.5)
     ),
     "forearm_tz": Dof(
         joint_type="prismatic", axis=(0, 1, 0), stiffness=1000, joint_range=(-0.5, 0.5)
     ),
     "forearm_roll": Dof(
-        joint_type="revolute", axis=(0, 0, 1), stiffness=300, joint_range=(-0.5, 0.5)
+        joint_type="revolute", axis=(0, 0, 1), stiffness=1000, joint_range=(-0.5, 0.5)
     ),
     "forearm_pitch": Dof(
-        joint_type="revolute", axis=(1, 0, 0), stiffness=50, joint_range=(-0.2, 0.2)
+        joint_type="revolute", axis=(1, 0, 0), stiffness=1000, joint_range=(-0.5, 0.5)
     ),
     "forearm_yaw": Dof(
-        joint_type="revolute", axis=(0, -1, 0), stiffness=300, joint_range=(-0.5, 0.5),
+        joint_type="revolute", axis=(0, -1, 0), stiffness=1000, joint_range=(-0.5, 0.5),
     ),
 }
 
@@ -56,6 +57,20 @@ def add_new_elem_for_dof(dof: Dof, root_elem, prev_joint_elem, new_link_name: st
     No need to add transmission/actuators since the USD converter ignores them.
     """
     new_link = etree.Element("link", name=new_link_name)
+    # add mass 0.01 to this new_link! seems to stablize simulation
+    mass = etree.Element("mass", value="0.1")
+    new_link.append(mass)
+    # also add inertial e.g.     
+    # <inertial>
+    #   <origin xyz="0 0 0" rpy="0 0 0"/>
+    #   <mass value="0.01"/>
+    # </inertial>
+    inertial = etree.Element("inertial")
+    origin = etree.Element("origin", xyz="0 0 0", rpy="0 0 0")
+    mass = etree.Element("mass", value="0.1")
+    inertial.append(origin)
+    inertial.append(mass)
+    new_link.append(inertial)
     root_elem.insert(1, new_link)
 
     # modify the <child> of prev_joint_elem to be new_link
@@ -81,7 +96,7 @@ def add_new_elem_for_dof(dof: Dof, root_elem, prev_joint_elem, new_link_name: st
     new_joint.append(axis)
     new_joint.append(limit)
     root_elem.insert(1, new_joint)
-    return 
+    return new_joint_name
 
 
 def add_forearm_dof(input_fname, output_fname, dof_choices: Sequence[str], base_link_name="base_link", left_hand=True):
@@ -103,29 +118,34 @@ def add_forearm_dof(input_fname, output_fname, dof_choices: Sequence[str], base_
     assert joint_elem.attrib["name"] == "fixed", "The first joint should be a fixed joint."
 
     curr_base_name = base_link_name
+    new_joint_names = []
     for dof_choice in dof_choices:
         dof = _FOREARM_DOFS[dof_choice]
         new_link_name = f"{dof_choice}_link"
-        add_new_elem_for_dof(dof, robot_elem, joint_elem, new_link_name, curr_base_name, left_hand=left_hand)
+        new_joint_name = add_new_elem_for_dof(
+            dof, robot_elem, joint_elem, new_link_name, curr_base_name, left_hand=left_hand
+            )
+        new_joint_names.append(new_joint_name)
         curr_base_name = new_link_name
     tree.write(output_fname, pretty_print=True)
-    return
+    return new_joint_names
 
 if __name__ == "__main__": 
     # now parse commandline arguments
     parser = argparse.ArgumentParser(description="Add new degree of freedom to the URDF file.")
     parser.add_argument("input", type=str, help="Input URDF file name.")
     parser.add_argument("output", type=str, help="Output URDF file name.")
-    parser.add_argument("dof_choices", type=str, nargs="+", help="List of degree of freedom choices.")
+    parser.add_argument("--dof_choices", type=str, nargs="+", help="List of degree of freedom choices.")
     parser.add_argument("--base_link", type=str, default="base_link", help="Base link name.")
 
     args = parser.parse_args()
     input_fname = args.input
-    output_fname = args.output
+    input_path = os.path.dirname(input_fname)
+    output_fname = os.path.join(input_path, args.output)
     # fname = "handright01091.urdf"
     # output_fname = "handright01091/urdf/handright01091_new.urdf"
-    # dof_choices = ["forearm_tx", "forearm_ty", "forearm_tz", "forearm_roll", "forearm_pitch", "forearm_yaw"]
-    dof_choices = args.dof_choices
+    dof_choices = ["forearm_tx", "forearm_ty", "forearm_tz", "forearm_roll", "forearm_pitch", "forearm_yaw"]
+    # dof_choices = args.dof_choices
     base_link_name = args.base_link
 
     add_forearm_dof(input_fname, output_fname, dof_choices, base_link_name, left_hand=True)
